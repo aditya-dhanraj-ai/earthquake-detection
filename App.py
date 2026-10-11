@@ -44,21 +44,31 @@ for q in data['features']:
 
 df = pd.DataFrame(quakes)
 
-st.sidebar.header("🎯 Filters")
-
 def get_flag_url(country_name):
     try:
         iso = coco.convert(names=country_name, to='ISO2')
         if iso == 'not found' or len(iso) != 2:
             return None
-        return f"https://flagcdn.com/24x18/{iso.lower()}.png"
+        return f"https://flagcdn.com/48x36/{iso.lower()}.png"
     except:
         return None
+
+st.sidebar.header("🎯 Filters")
 
 countries = ["All Countries"] + sorted(df['country'].unique().tolist())
 countries_display = ["All Countries"] + countries[1:]
 
 selected = st.sidebar.selectbox("Select Country", countries_display)
+
+if selected != "All Countries":
+    flag_url_sidebar = get_flag_url(selected)
+    if flag_url_sidebar:
+        st.sidebar.markdown(
+            f'<div style="text-align:center; margin-top:-10px; margin-bottom:10px;">'
+            f'<img src="{flag_url_sidebar}" style="width:60px; border-radius:5px; box-shadow:0 0 10px rgba(255,75,75,0.5);">'
+            f'</div>',
+            unsafe_allow_html=True
+        )
 
 min_mag = st.sidebar.slider("Minimum Magnitude", 2.5, 7.0, 2.5, 0.1)
 
@@ -117,9 +127,18 @@ with col_right:
 
 st.markdown("---")
 
-flag_url = get_flag_url(selected) if selected != "All Countries" else None
-if flag_url:
-    st.markdown(f'<img src="{flag_url}" style="width:40px; margin-right:10px;"> <span style="font-size:1.5rem; font-weight:bold; color:#ff4b4b;">Live Earthquakes — {selected}</span>', unsafe_allow_html=True)
+if selected != "All Countries":
+    flag_url_header = get_flag_url(selected)
+    if flag_url_header:
+        st.markdown(
+            f'<div style="display:flex; align-items:center; margin-bottom:10px;">'
+            f'<img src="{flag_url_header}" style="width:45px; margin-right:15px; border-radius:5px;">'
+            f'<h2 style="color:#ff4b4b; margin:0;">Live Earthquakes — {selected}</h2>'
+            f'</div>',
+            unsafe_allow_html=True
+        )
+    else:
+        st.subheader(f"🔴 Live Earthquakes — {selected}")
 else:
     st.subheader(f"🔴 Live Earthquakes — {selected}")
 
