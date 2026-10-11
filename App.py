@@ -61,7 +61,6 @@ countries_display = ["🌍 All Countries"] + [add_flag(c) for c in countries[1:]
 
 selected_display = st.sidebar.selectbox("Select Country", countries_display)
 selected = selected_display.split(' ', 1)[1] if selected_display != "🌍 All Countries" else "All Countries"
-selected = st.sidebar.selectbox("Select Country", countries)
 min_mag = st.sidebar.slider("Minimum Magnitude", 2.5, 7.0, 2.5, 0.1)
 
 if selected == "All Countries":
