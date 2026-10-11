@@ -46,20 +46,19 @@ df = pd.DataFrame(quakes)
 
 st.sidebar.header("🎯 Filters")
 
-def get_flag(country_name):
+def get_flag_url(country_name):
     try:
         iso = coco.convert(names=country_name, to='ISO2')
         if iso == 'not found' or len(iso) != 2:
-            return "🌍"
-        return "".join(chr(ord(c) + 127397) for c in iso.upper())
+            return None
+        return f"https://flagcdn.com/24x18/{iso.lower()}.png"
     except:
-        return "🌍"
+        return None
 
 countries = ["All Countries"] + sorted(df['country'].unique().tolist())
-countries_display = ["🌍 All Countries"] + [f"{get_flag(c)} {c}" for c in countries[1:]]
+countries_display = ["All Countries"] + countries[1:]
 
-selected_display = st.sidebar.selectbox("Select Country", countries_display)
-selected = selected_display.split(' ', 1)[1] if selected_display != "🌍 All Countries" else "All Countries"
+selected = st.sidebar.selectbox("Select Country", countries_display)
 
 min_mag = st.sidebar.slider("Minimum Magnitude", 2.5, 7.0, 2.5, 0.1)
 
@@ -117,7 +116,12 @@ with col_right:
         st.plotly_chart(fig2, use_container_width=True)
 
 st.markdown("---")
-st.subheader(f"🔴 Live Earthquakes — {selected}")
+
+flag_url = get_flag_url(selected) if selected != "All Countries" else None
+if flag_url:
+    st.markdown(f'<img src="{flag_url}" style="width:40px; margin-right:10px;"> <span style="font-size:1.5rem; font-weight:bold; color:#ff4b4b;">Live Earthquakes — {selected}</span>', unsafe_allow_html=True)
+else:
+    st.subheader(f"🔴 Live Earthquakes — {selected}")
 
 if len(filtered) == 0:
     st.info("No earthquakes match your filters")
