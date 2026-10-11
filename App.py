@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import pandas as pd
 import plotly.express as px
+import country_converter as coco
 
 st.set_page_config(page_title="Earthquake Detection", page_icon="🌍", layout="wide")
 
@@ -44,30 +45,28 @@ for q in data['features']:
 df = pd.DataFrame(quakes)
 
 st.sidebar.header("🎯 Filters")
-# Country flags
-flags = {
-    "Japan": "🇯🇵", "Alaska": "🇺🇸", "Peru": "🇵🇪",
-    "Papua New Guinea": "🇵🇬", "Russia": "🇷🇺", "Indonesia": "🇮🇩",
-    "Chile": "🇨🇱", "Mexico": "🇲🇽", "California": "🇺🇸",
-    "Philippines": "🇵🇭", "Argentina": "🇦🇷", "New Zealand": "🇳🇿",
-}
 
-def add_flag(country):
-    flag = flags.get(country, "🌍")
-    return f"{flag} {country}"
+def get_flag(country_name):
+    try:
+        iso = coco.convert(names=country_name, to='ISO2')
+        if iso == 'not found' or len(iso) != 2:
+            return "🌍"
+        return "".join(chr(ord(c) + 127397) for c in iso.upper())
+    except:
+        return "🌍"
 
 countries = ["All Countries"] + sorted(df['country'].unique().tolist())
-countries_display = ["🌍 All Countries"] + [add_flag(c) for c in countries[1:]]
+countries_display = ["🌍 All Countries"] + [f"{get_flag(c)} {c}" for c in countries[1:]]
 
 selected_display = st.sidebar.selectbox("Select Country", countries_display)
 selected = selected_display.split(' ', 1)[1] if selected_display != "🌍 All Countries" else "All Countries"
+
 min_mag = st.sidebar.slider("Minimum Magnitude", 2.5, 7.0, 2.5, 0.1)
 
 if selected == "All Countries":
     filtered = df[df['magnitude'] >= min_mag]
 else:
     filtered = df[(df['country'] == selected) & (df['magnitude'] >= min_mag)]
-
 
 st.sidebar.markdown("---")
 st.sidebar.header("🔒 Admin Login")
@@ -84,7 +83,6 @@ elif password == "":
 else:
     st.sidebar.error("❌ Wrong Password")
     is_admin = False
-
 
 col1, col2, col3, col4 = st.columns(4)
 with col1:
@@ -132,7 +130,7 @@ else:
             color, icon = "#ff8c00", "🟠"
         else:
             color, icon = "#00c853", "🟢"
-        
+
         st.markdown(f"""
         <div class="quake-card" style="border-left-color: {color};">
             <span style="color:{color}; font-weight:bold; font-size:1.2rem;">
@@ -144,7 +142,6 @@ else:
         </div>
         """, unsafe_allow_html=True)
 
-
 if is_admin:
     st.markdown("---")
     st.markdown("""
@@ -152,23 +149,22 @@ if is_admin:
         <h2 style="color:#ff4b4b;">🔒 Admin Panel</h2>
     </div>
     """, unsafe_allow_html=True)
-    
+
     st.subheader("🎛️ Admin Controls")
-    
+
     col_a, col_b, col_c = st.columns(3)
-    
+
     with col_a:
-        if st.button("📥 Download Full Data"):
-            csv = df.to_csv(index=False).encode('utf-8')
-            st.download_button("Click to Download", csv, "all_earthquakes.csv", "text/csv")
-    
+        csv = df.to_csv(index=False).encode('utf-8')
+        st.download_button("📥 Download Full Data", csv, "all_earthquakes.csv", "text/csv")
+
     with col_b:
         if st.button("🔄 Refresh Data"):
             st.rerun()
-    
+
     with col_c:
         st.write(f"Total records: {len(df)}")
-    
+
     st.subheader("📊 Full Data Preview")
     st.dataframe(df)
 
