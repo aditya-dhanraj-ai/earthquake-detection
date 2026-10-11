@@ -44,7 +44,23 @@ for q in data['features']:
 df = pd.DataFrame(quakes)
 
 st.sidebar.header("🎯 Filters")
+# Country flags
+flags = {
+    "Japan": "🇯🇵", "Alaska": "🇺🇸", "Peru": "🇵🇪",
+    "Papua New Guinea": "🇵🇬", "Russia": "🇷🇺", "Indonesia": "🇮🇩",
+    "Chile": "🇨🇱", "Mexico": "🇲🇽", "California": "🇺🇸",
+    "Philippines": "🇵🇭", "Argentina": "🇦🇷", "New Zealand": "🇳🇿",
+}
+
+def add_flag(country):
+    flag = flags.get(country, "🌍")
+    return f"{flag} {country}"
+
 countries = ["All Countries"] + sorted(df['country'].unique().tolist())
+countries_display = ["🌍 All Countries"] + [add_flag(c) for c in countries[1:]]
+
+selected_display = st.sidebar.selectbox("Select Country", countries_display)
+selected = selected_display.split(' ', 1)[1] if selected_display != "🌍 All Countries" else "All Countries"
 selected = st.sidebar.selectbox("Select Country", countries)
 min_mag = st.sidebar.slider("Minimum Magnitude", 2.5, 7.0, 2.5, 0.1)
 
