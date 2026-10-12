@@ -216,7 +216,8 @@ with tab2:
                     photo = get_wiki_photo(selected_location)
                     if photo:
                         country = selected_location.split(',')[-1].strip()
-                        st.image(photo, caption=f"Photo of {country}", use_column_width=True)
+                        st.markdown(f'<img src="{photo}" style="width:100%; border-radius:10px; box-shadow:0 0 20px rgba(255,75,75,0.3);">', unsafe_allow_html=True)
+                        st.caption(f"📸 Photo of {country}")
                     else:
                         st.info("Photo not available. Click below to search:")
 
