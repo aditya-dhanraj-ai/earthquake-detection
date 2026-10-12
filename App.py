@@ -61,20 +61,18 @@ def get_flag_url(country_name):
 def get_wiki_photo(place_name):
     try:
         country = place_name.split(',')[-1].strip()
-        country_clean = country.replace("'", "").replace("-", " ")
-
-        for term in [country_clean, country]:
+        country_clean = country.replace("'", "").replace("-", " ").replace(" ", "")
+        
+        for term in [country_clean, country.replace(" ", "")]:
             try:
-                url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{term.replace(' ', '_')}"
-                headers = {'User-Agent': 'EarthquakeApp/1.0 (educational)'}
-                response = requests.get(url, headers=headers, timeout=5).json()
-                if 'thumbnail' in response and 'source' in response['thumbnail']:
-                    img = response['thumbnail']['source']
-                    if not any(x in img.lower() for x in ['map', 'locator', 'flag', 'seal', 'coat']):
-                        return img
+                url = f"https://loremflickr.com/800/500/{term}"
+                response = requests.get(url, timeout=10, allow_redirects=True)
+                if response.status_code == 200 and len(response.content) > 5000:
+                    return url
             except:
                 continue
-        return None
+        
+        return f"https://loremflickr.com/800/500/earthquake"
     except:
         return None
 
