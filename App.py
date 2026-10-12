@@ -36,7 +36,7 @@ for q in data['features']:
     country = place.split(',')[-1].strip() if ',' in place else "Unknown"
     time_ms = q['properties']['time']
     time_readable = datetime.fromtimestamp(time_ms / 1000).strftime('%d-%m-%Y %H:%M:%S')
-    
+
     quakes.append({
         'magnitude': q['properties']['mag'],
         'place': place,
@@ -60,30 +60,18 @@ def get_flag_url(country_name):
 
 def get_wiki_photo(place_name):
     try:
-        city = place_name.split(' of ')[-1].split(',')[0].strip()
         country = place_name.split(',')[-1].strip()
-        
-        for term in [f"{city} {country}", city, country]:
+        country_clean = country.replace("'", "").replace("-", " ")
+
+        for term in [country_clean, country]:
             try:
-                url = "https://commons.wikimedia.org/w/api.php"
-                params = {
-                    "action": "query",
-                    "format": "json",
-                    "generator": "search",
-                    "gsrsearch": f"filetype:bitmap {term}",
-                    "gsrnamespace": "6",
-                    "gsrlimit": "5",
-                    "prop": "imageinfo",
-                    "iiprop": "url",
-                    "iiurlwidth": "800"
-                }
-                response = requests.get(url, params=params, timeout=10).json()
-                if 'query' in response and 'pages' in response['query']:
-                    for page_id, page in response['query']['pages'].items():
-                        if 'imageinfo' in page:
-                            img_url = page['imageinfo'][0]['thumburl']
-                            if not any(x in img_url.lower() for x in ['map', 'locator', 'flag', 'seal', 'logo', 'coat_of_arms']):
-                                return img_url
+                url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{term.replace(' ', '_')}"
+                headers = {'User-Agent': 'EarthquakeApp/1.0 (educational)'}
+                response = requests.get(url, headers=headers, timeout=5).json()
+                if 'thumbnail' in response and 'source' in response['thumbnail']:
+                    img = response['thumbnail']['source']
+                    if not any(x in img.lower() for x in ['map', 'locator', 'flag', 'seal', 'coat']):
+                        return img
             except:
                 continue
         return None
@@ -222,12 +210,33 @@ with tab2:
 
         if st.button("🔍 Load Photos"):
             with st.spinner("Loading photos..."):
-                photo = get_wiki_photo(selected_location)
-                if photo:
-                    st.image(photo, caption=selected_location, use_column_width=True)
-                else:
-                    st.warning("No photo found for this location")
-                    st.markdown(f"**Search on Google Images:** [Click here](https://www.google.com/search?tbm=isch&q={selected_location.replace(' ', '+')})")
+                row = filtered[filtered['place'] == selected_location].iloc[0]
+
+                col1, col2 = st.columns([2, 1])
+
+                with col1:
+                    photo = get_wiki_photo(selected_location)
+                    if photo:
+                        country = selected_location.split(',')[-1].strip()
+                        st.image(photo, caption=f"Photo of {country}", use_column_width=True)
+                    else:
+                        st.info("Photo not available. Click below to search:")
+
+                with col2:
+                    st.markdown("### 🌍 Country Info")
+                    country = selected_location.split(',')[-1].strip()
+                    st.markdown(f"**Country:** {country}")
+
+                    flag = get_flag_url(country)
+                    if flag:
+                        st.markdown(f'<img src="{flag}" style="width:100px; margin:10px 0;">', unsafe_allow_html=True)
+
+                    st.markdown(f"**Magnitude:** {row['magnitude']}")
+                    st.markdown(f"**Time:** {row['time']}")
+                    st.markdown(f"**Depth:** {row['depth']} km")
+
+                    google_link = f"https://www.google.com/search?tbm=isch&q={selected_location.replace(' ', '+')}"
+                    st.markdown(f"[🔍 Search on Google Images]({google_link})")
     else:
         st.info("No earthquakes match your filters")
 
