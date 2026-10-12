@@ -63,14 +63,27 @@ def get_wiki_photo(place_name):
         city = place_name.split(' of ')[-1].split(',')[0].strip()
         country = place_name.split(',')[-1].strip()
         
-        
-        for search_term in [f"{city},{country}", city, country]:
+        for term in [f"{city} {country}", city, country]:
             try:
-                clean_term = search_term.replace(' ', ',')
-                url = f"https://loremflickr.com/800/500/{clean_term}/all"
-                response = requests.get(url, timeout=10)
-                if response.status_code == 200:
-                    return url
+                url = "https://commons.wikimedia.org/w/api.php"
+                params = {
+                    "action": "query",
+                    "format": "json",
+                    "generator": "search",
+                    "gsrsearch": f"filetype:bitmap {term}",
+                    "gsrnamespace": "6",
+                    "gsrlimit": "5",
+                    "prop": "imageinfo",
+                    "iiprop": "url",
+                    "iiurlwidth": "800"
+                }
+                response = requests.get(url, params=params, timeout=10).json()
+                if 'query' in response and 'pages' in response['query']:
+                    for page_id, page in response['query']['pages'].items():
+                        if 'imageinfo' in page:
+                            img_url = page['imageinfo'][0]['thumburl']
+                            if not any(x in img_url.lower() for x in ['map', 'locator', 'flag', 'seal', 'logo', 'coat_of_arms']):
+                                return img_url
             except:
                 continue
         return None
