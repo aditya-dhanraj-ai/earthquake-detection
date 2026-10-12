@@ -63,14 +63,14 @@ def get_wiki_photo(place_name):
         city = place_name.split(' of ')[-1].split(',')[0].strip()
         country = place_name.split(',')[-1].strip()
         
-        search_terms = [city, country]
         
-        for term in search_terms:
+        for search_term in [f"{city},{country}", city, country]:
             try:
-                url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{term.replace(' ', '_')}"
-                response = requests.get(url, headers={'User-Agent': 'EarthquakeApp/1.0'}, timeout=5).json()
-                if 'thumbnail' in response:
-                    return response['thumbnail']['source']
+                clean_term = search_term.replace(' ', ',')
+                url = f"https://loremflickr.com/800/500/{clean_term}/all"
+                response = requests.get(url, timeout=10)
+                if response.status_code == 200:
+                    return url
             except:
                 continue
         return None
