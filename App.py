@@ -3,6 +3,7 @@ import requests
 import pandas as pd
 import plotly.express as px
 import country_converter as coco
+from datetime import datetime
 
 st.set_page_config(page_title="Earthquake Detection", page_icon="🌍", layout="wide")
 
@@ -33,13 +34,17 @@ quakes = []
 for q in data['features']:
     place = q['properties']['place']
     country = place.split(',')[-1].strip() if ',' in place else "Unknown"
+    time_ms = q['properties']['time']
+    time_readable = datetime.fromtimestamp(time_ms / 1000).strftime('%d-%m-%Y %H:%M:%S')
+    
     quakes.append({
         'magnitude': q['properties']['mag'],
         'place': place,
         'country': country,
         'depth': q['geometry']['coordinates'][2],
         'lat': q['geometry']['coordinates'][1],
-        'lon': q['geometry']['coordinates'][0]
+        'lon': q['geometry']['coordinates'][0],
+        'time': time_readable
     })
 
 df = pd.DataFrame(quakes)
@@ -161,6 +166,10 @@ else:
             </span>
             <span style="color:#ccc; margin-left:20px;">
                 📍 {row['place']} | Depth: {row['depth']:.1f} km
+            </span>
+            <br>
+            <span style="color:#888; margin-left:0px; font-size:0.9rem;">
+                🕐 {row['time']}
             </span>
         </div>
         """, unsafe_allow_html=True)
