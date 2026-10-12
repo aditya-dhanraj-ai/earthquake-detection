@@ -4,9 +4,10 @@ import pandas as pd
 import plotly.express as px
 import country_converter as coco
 from datetime import datetime
-import time
 
 st.set_page_config(page_title="Earthquake Detection", page_icon="🌍", layout="wide")
+
+st.markdown('<meta http-equiv="refresh" content="30">', unsafe_allow_html=True)
 
 st.markdown("""
 <style>
@@ -289,5 +290,3 @@ if is_admin:
 
 st.markdown("---")
 st.markdown("<p style='text-align:center; color:#555;'>Built with Streamlit • Powered by USGS</p>", unsafe_allow_html=True)
-time.sleep(30)
-st.rerun()
