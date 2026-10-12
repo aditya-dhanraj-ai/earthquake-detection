@@ -63,19 +63,17 @@ def get_wiki_photo(place_name):
         country = place_name.split(',')[-1].strip()
         country_clean = country.replace("'", "").replace("-", " ").replace(" ", "")
         
-        for term in [country_clean, country.replace(" ", "")]:
+        for term in [country_clean, country.replace(" ", ""), "landscape"]:
             try:
                 url = f"https://loremflickr.com/800/500/{term}"
-                response = requests.get(url, timeout=10, allow_redirects=True)
-                if response.status_code == 200 and len(response.content) > 5000:
-                    return url
+                response = requests.get(url, timeout=15, allow_redirects=True)
+                if response.status_code == 200 and len(response.content) > 10000:
+                    return response.content
             except:
                 continue
-        
-        return f"https://loremflickr.com/800/500/earthquake"
+        return None
     except:
         return None
-
 def get_satellite_url(lat, lon):
     return f"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox={lon-0.5},{lat-0.5},{lon+0.5},{lat+0.5}&bboxSR=4326&imageSR=4326&size=800,500&f=image&format=png"
 
