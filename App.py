@@ -62,28 +62,15 @@ def get_wiki_photo(place_name):
     try:
         city = place_name.split(' of ')[-1].split(',')[0].strip()
         country = place_name.split(',')[-1].strip()
-        country_map = {
-            "Alaska": "Alaska", "California": "California", "CA": "California",
-            "Japan": "Japan", "Peru": "Peru", "Indonesia": "Indonesia",
-            "Russia": "Russia", "Chile": "Chile", "Mexico": "Mexico",
-            "Papua New Guinea": "Papua_New_Guinea", "Philippines": "Philippines",
-            "New Zealand": "New_Zealand", "Argentina": "Argentina",
-            "Greece": "Greece", "Italy": "Italy", "Turkey": "Turkey",
-            "Iran": "Iran", "India": "India", "Nepal": "Nepal",
-            "Fiji": "Fiji", "Tonga": "Tonga", "Panama": "Panama",
-            "Costa Rica": "Costa_Rica", "Guatemala": "Guatemala",
-            "Vanuatu": "Vanuatu", "Solomon Islands": "Solomon_Islands",
-        }
-        country_wiki = country_map.get(country, country)
         
-        for search_term in [city, country_wiki, place_name]:
+        search_terms = [city, country]
+        
+        for term in search_terms:
             try:
-                search_url = f"https://en.wikipedia.org/w/api.php?action=query&titles={search_term.replace(' ', '_')}&prop=pageimages&format=json&pithumbsize=800"
-                response = requests.get(search_url).json()
-                pages = response['query']['pages']
-                for page_id in pages:
-                    if 'thumbnail' in pages[page_id]:
-                        return pages[page_id]['thumbnail']['source']
+                url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{term.replace(' ', '_')}"
+                response = requests.get(url, headers={'User-Agent': 'EarthquakeApp/1.0'}, timeout=5).json()
+                if 'thumbnail' in response:
+                    return response['thumbnail']['source']
             except:
                 continue
         return None
