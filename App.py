@@ -62,7 +62,7 @@ def get_wiki_photo(place_name):
     try:
         country = place_name.split(',')[-1].strip()
         country_clean = country.replace("'", "").replace("-", " ").replace(" ", "")
-        
+
         for term in [country_clean, country.replace(" ", ""), "landscape"]:
             try:
                 url = f"https://loremflickr.com/800/500/{term}"
@@ -74,6 +74,7 @@ def get_wiki_photo(place_name):
         return None
     except:
         return None
+
 def get_satellite_url(lat, lon):
     return f"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox={lon-0.5},{lat-0.5},{lon+0.5},{lat+0.5}&bboxSR=4326&imageSR=4326&size=800,500&f=image&format=png"
 
@@ -214,8 +215,7 @@ with tab2:
                     photo = get_wiki_photo(selected_location)
                     if photo:
                         country = selected_location.split(',')[-1].strip()
-                        st.markdown(f'<img src="{photo}" style="width:100%; border-radius:10px; box-shadow:0 0 20px rgba(255,75,75,0.3);">', unsafe_allow_html=True)
-                        st.caption(f"📸 Photo of {country}")
+                        st.image(photo, caption=f"📸 Photo of {country}", use_column_width=True)
                     else:
                         st.info("Photo not available. Click below to search:")
 
