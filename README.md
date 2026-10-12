@@ -25,6 +25,23 @@ A real-time earthquake monitoring and analysis web application powered by USGS l
 - **Esri Satellite** - Satellite imagery
 - **country_converter** - Country flag emojis
 
+## 🔗 Live Demo
+
+🌍 **[Click here to view the Live App](https://earthquake-detection-388nuth889schqmpxuzcyr.streamlit.app)**
+
+## 📊 Data Source
+
+Data is fetched in real-time from [USGS Earthquake Hazards Program](https://earthquake.usgs.gov/)
+
+## 👨‍💻 Developer
+
+**Aditya Dhanraj**  
+BCA Student | Aspiring ML Engineer
+
+---
+
+*Built with ❤️ for Hokkaido University MEXT Application*
+
 ## 📦 Installation
 
 ```bash
