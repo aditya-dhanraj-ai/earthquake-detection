@@ -4,6 +4,8 @@ import pandas as pd
 import plotly.express as px
 import country_converter as coco
 from datetime import datetime
+import matplotlib.pyplot as plt
+import numpy as np
 
 st.set_page_config(page_title="Earthquake Detection", page_icon="🌍", layout="wide")
 
@@ -98,21 +100,21 @@ if selected != "All Countries":
         )
 
 min_mag = st.sidebar.slider("Minimum Magnitude", 2.5, 7.0, 2.5, 0.1)
+
 min_depth, max_depth = st.sidebar.slider(
     "Depth Range (km)",
     min_value=0, max_value=700,
     value=(0, 700)
 )
+
 time_range = st.sidebar.selectbox(
     "Time Range",
     ["Last 1 Hour", "Last 6 Hours", "Last 12 Hours", "Last 24 Hours"]
 )
 
-
-from datetime import datetime, timedelta
 hours_map = {"Last 1 Hour": 1, "Last 6 Hours": 6, "Last 12 Hours": 12, "Last 24 Hours": 24}
 hours = hours_map[time_range]
-cutoff_time = datetime.now() - timedelta(hours=hours)
+cutoff_time = datetime.now() - pd.Timedelta(hours=hours)
 df['datetime'] = pd.to_datetime(df['time'], format='%d-%m-%Y %H:%M:%S')
 time_filtered = df[df['datetime'] >= cutoff_time]
 
@@ -136,6 +138,7 @@ elif password == "":
 else:
     st.sidebar.error("❌ Wrong Password")
     is_admin = False
+
 major_quakes = df[df['magnitude'] >= 5.0]
 if len(major_quakes) > 0:
     st.markdown(f"""
@@ -153,6 +156,7 @@ if len(major_quakes) > 0:
     }}
     </style>
     """, unsafe_allow_html=True)
+
 tab1, tab2, tab3 = st.tabs(["📊 Live Data", "📸 Photos", "🛰️ Satellite"])
 
 with tab1:
@@ -165,6 +169,27 @@ with tab1:
         st.metric("Avg Magnitude", f"{filtered['magnitude'].mean():.2f}" if len(filtered) > 0 else "0")
     with col4:
         st.metric("Avg Depth (km)", f"{filtered['depth'].mean():.1f}" if len(filtered) > 0 else "0")
+
+    st.markdown("---")
+
+    st.subheader("📈 Live Seismic Signal (Simulated)")
+    t = np.linspace(0, 10, 1000)
+    signal = (2.0 * np.sin(2 * np.pi * 1 * t) +
+              1.5 * np.sin(2 * np.pi * 3 * t) +
+              0.5 * np.random.randn(len(t)))
+
+    fig_sig, ax = plt.subplots(figsize=(12, 3))
+    fig_sig.patch.set_facecolor('#0e1117')
+    ax.set_facecolor('#1e2530')
+    ax.plot(t, signal, color='#ff4b4b', linewidth=1)
+    ax.set_xlabel("Time (seconds)", color='white')
+    ax.set_ylabel("Amplitude", color='white')
+    ax.set_title("Earthquake Signal - Seismic Waveform", color='white')
+    ax.tick_params(colors='white')
+    ax.grid(True, alpha=0.3)
+    for spine in ax.spines.values():
+        spine.set_color('white')
+    st.pyplot(fig_sig)
 
     st.markdown("---")
 
