@@ -98,11 +98,16 @@ if selected != "All Countries":
         )
 
 min_mag = st.sidebar.slider("Minimum Magnitude", 2.5, 7.0, 2.5, 0.1)
+min_depth, max_depth = st.sidebar.slider(
+    "Depth Range (km)",
+    min_value=0, max_value=700,
+    value=(0, 700)
+)
 
 if selected == "All Countries":
-    filtered = df[df['magnitude'] >= min_mag]
+    filtered = df[(df['magnitude'] >= min_mag) & (df['depth'] >= min_depth) & (df['depth'] <= max_depth)]
 else:
-    filtered = df[(df['country'] == selected) & (df['magnitude'] >= min_mag)]
+    filtered = df[(df['country'] == selected) & (df['magnitude'] >= min_mag) & (df['depth'] >= min_depth) & (df['depth'] <= max_depth)]
 
 st.sidebar.markdown("---")
 st.sidebar.header("🔒 Admin Login")
