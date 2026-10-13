@@ -157,6 +157,17 @@ with tab1:
 
     st.markdown("---")
 
+    st.subheader("🏆 Top 10 Strongest Earthquakes")
+    if len(filtered) > 0:
+        top10 = filtered.nlargest(10, 'magnitude')
+        fig3 = px.bar(top10, x='magnitude', y='place', orientation='h',
+                      color='magnitude', color_continuous_scale='Reds')
+        fig3.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
+                           font_color='white', height=400)
+        st.plotly_chart(fig3, use_container_width=True)
+
+    st.markdown("---")
+
     if selected != "All Countries":
         flag_url_header = get_flag_url(selected)
         if flag_url_header:
