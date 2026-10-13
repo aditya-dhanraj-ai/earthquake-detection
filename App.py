@@ -103,11 +103,23 @@ min_depth, max_depth = st.sidebar.slider(
     min_value=0, max_value=700,
     value=(0, 700)
 )
+time_range = st.sidebar.selectbox(
+    "Time Range",
+    ["Last 1 Hour", "Last 6 Hours", "Last 12 Hours", "Last 24 Hours"]
+)
+
+
+from datetime import datetime, timedelta
+hours_map = {"Last 1 Hour": 1, "Last 6 Hours": 6, "Last 12 Hours": 12, "Last 24 Hours": 24}
+hours = hours_map[time_range]
+cutoff_time = datetime.now() - timedelta(hours=hours)
+df['datetime'] = pd.to_datetime(df['time'], format='%d-%m-%Y %H:%M:%S')
+time_filtered = df[df['datetime'] >= cutoff_time]
 
 if selected == "All Countries":
-    filtered = df[(df['magnitude'] >= min_mag) & (df['depth'] >= min_depth) & (df['depth'] <= max_depth)]
+    filtered = time_filtered[(time_filtered['magnitude'] >= min_mag) & (time_filtered['depth'] >= min_depth) & (time_filtered['depth'] <= max_depth)]
 else:
-    filtered = df[(df['country'] == selected) & (df['magnitude'] >= min_mag) & (df['depth'] >= min_depth) & (df['depth'] <= max_depth)]
+    filtered = time_filtered[(time_filtered['country'] == selected) & (time_filtered['magnitude'] >= min_mag) & (time_filtered['depth'] >= min_depth) & (time_filtered['depth'] <= max_depth)]
 
 st.sidebar.markdown("---")
 st.sidebar.header("🔒 Admin Login")
