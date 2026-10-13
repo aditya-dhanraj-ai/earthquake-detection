@@ -6,6 +6,7 @@ import country_converter as coco
 from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.ensemble import RandomForestClassifier
 
 st.set_page_config(page_title="Earthquake Detection", page_icon="🌍", layout="wide")
 
@@ -24,11 +25,16 @@ st.markdown("""
         background: #1e2530; padding: 20px; border-radius: 15px;
         border: 2px solid #ff4b4b; margin: 20px 0;
     }
+    .prediction-box {
+        background: linear-gradient(90deg, #1a1f2e 0%, #2a3441 100%);
+        padding: 10px 15px; border-radius: 8px; margin-top: 8px;
+        border-left: 3px solid #00d4ff;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 st.markdown("<h1>🌍 Earthquake Detection System</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align:center; color:#888;'>Real-time Seismic Monitoring</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center; color:#888;'>Real-time Seismic Monitoring with AI</p>", unsafe_allow_html=True)
 st.markdown("---")
 
 url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson"
@@ -52,6 +58,34 @@ for q in data['features']:
     })
 
 df = pd.DataFrame(quakes)
+
+def get_risk_label(mag):
+    if mag >= 5:
+        return "HIGH"
+    elif mag >= 4:
+        return "MEDIUM"
+    else:
+        return "LOW"
+
+df['risk'] = df['magnitude'].apply(get_risk_label)
+
+X = df[['magnitude', 'depth', 'lat', 'lon']]
+y = df['risk']
+
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X, y)
+
+predictions = model.predict(X)
+df['prediction'] = predictions
+
+probabilities = model.predict_proba(X)
+df['confidence'] = np.max(probabilities, axis=1) * 100
+
+def get_risk_score(mag, depth):
+    score = (mag / 7.0) * 70 + ((700 - depth) / 700) * 30
+    return min(round(score, 1), 100)
+
+df['risk_score'] = df.apply(lambda r: get_risk_score(r['magnitude'], r['depth']), axis=1)
 
 def get_flag_url(country_name):
     try:
@@ -157,7 +191,7 @@ if len(major_quakes) > 0:
     </style>
     """, unsafe_allow_html=True)
 
-tab1, tab2, tab3 = st.tabs(["📊 Live Data", "📸 Photos", "🛰️ Satellite"])
+tab1, tab2, tab3, tab4 = st.tabs(["📊 Live Data", "🤖 AI Analysis", "📸 Photos", "🛰️ Satellite"])
 
 with tab1:
     col1, col2, col3, col4 = st.columns(4)
@@ -253,6 +287,20 @@ with tab1:
             else:
                 color, icon = "#00c853", "🟢"
 
+            prediction = row['prediction']
+            confidence = row['confidence']
+            risk_score = row['risk_score']
+
+            if prediction == "HIGH":
+                pred_color = "#ff0000"
+                pred_icon = "🚨"
+            elif prediction == "MEDIUM":
+                pred_color = "#ff8c00"
+                pred_icon = "⚠️"
+            else:
+                pred_color = "#00c853"
+                pred_icon = "✅"
+
             st.markdown(f"""
             <div class="quake-card" style="border-left-color: {color};">
                 <span style="color:{color}; font-weight:bold; font-size:1.2rem;">
@@ -265,10 +313,67 @@ with tab1:
                 <span style="color:#888; margin-left:0px; font-size:0.9rem;">
                     🕐 {row['time']}
                 </span>
+                <div class="prediction-box">
+                    <span style="color:{pred_color}; font-weight:bold;">
+                        {pred_icon} AI Prediction: {prediction}
+                    </span>
+                    <span style="color:#00d4ff; margin-left:15px;">
+                        Confidence: {confidence:.1f}%
+                    </span>
+                    <span style="color:#ccc; margin-left:15px;">
+                        Risk Score: {risk_score}/100
+                    </span>
+                </div>
             </div>
             """, unsafe_allow_html=True)
 
 with tab2:
+    st.subheader("🤖 AI Model Analysis")
+    st.write("Machine Learning predictions for earthquake risk assessment")
+    
+    st.markdown("---")
+    
+    st.subheader("📊 Model Information")
+    col_a, col_b, col_c = st.columns(3)
+    with col_a:
+        st.metric("Model Type", "Random Forest")
+    with col_b:
+        st.metric("Trees", "100")
+    with col_c:
+        st.metric("Features", "4")
+    
+    st.markdown("---")
+    
+    st.subheader("🎯 Prediction Distribution")
+    if len(df) > 0:
+        pred_counts = df['prediction'].value_counts()
+        fig_pred = px.pie(values=pred_counts.values, names=pred_counts.index,
+                          color=pred_counts.index,
+                          color_discrete_map={'HIGH': '#ff0000', 'MEDIUM': '#ff8c00', 'LOW': '#00c853'})
+        fig_pred.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
+                               font_color='white', height=400)
+        st.plotly_chart(fig_pred, use_container_width=True)
+    
+    st.markdown("---")
+    
+    st.subheader("📈 Feature Importance")
+    features = ['Magnitude', 'Depth', 'Latitude', 'Longitude']
+    importances = model.feature_importances_
+    fig_imp = px.bar(x=features, y=importances,
+                     color=importances, color_continuous_scale='Reds')
+    fig_imp.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
+                          font_color='white', height=400,
+                          xaxis_title="Features", yaxis_title="Importance")
+    st.plotly_chart(fig_imp, use_container_width=True)
+    
+    st.markdown("---")
+    
+    st.subheader("🔮 All Predictions")
+    pred_df = df[['place', 'magnitude', 'depth', 'prediction', 'confidence', 'risk_score']].copy()
+    pred_df.columns = ['Location', 'Magnitude', 'Depth (km)', 'Prediction', 'Confidence (%)', 'Risk Score']
+    st.dataframe(pred_df, use_container_width=True)
+
+with tab3:
     st.subheader("📸 Earthquake Location Photos")
     st.write("Select an earthquake location to see photos")
 
@@ -308,7 +413,7 @@ with tab2:
     else:
         st.info("No earthquakes match your filters")
 
-with tab3:
+with tab4:
     st.subheader("🛰️ Satellite View")
     st.write("Select an earthquake to see satellite view with marker")
 
@@ -358,4 +463,4 @@ if is_admin:
     st.dataframe(df)
 
 st.markdown("---")
-st.markdown("<p style='text-align:center; color:#555;'>Built with Streamlit • Powered by USGS</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center; color:#555;'>Built with Streamlit • Powered by USGS • AI by Random Forest</p>", unsafe_allow_html=True)
