@@ -5,3 +5,4 @@ plotly
 country_converter
 matplotlib
 numpy
+scikit-learn
