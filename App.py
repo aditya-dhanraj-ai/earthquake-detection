@@ -136,7 +136,23 @@ elif password == "":
 else:
     st.sidebar.error("❌ Wrong Password")
     is_admin = False
-
+major_quakes = df[df['magnitude'] >= 5.0]
+if len(major_quakes) > 0:
+    st.markdown(f"""
+    <div style="background: linear-gradient(90deg, #ff0000 0%, #8b0000 100%);
+                padding: 20px; border-radius: 15px; margin: 20px 0;
+                animation: pulse 2s infinite; border: 2px solid #ff4b4b;">
+        <h2 style="color: white; margin: 0;">🚨 ALERT: {len(major_quakes)} Major Earthquake(s) Detected!</h2>
+        <p style="color: #ffcccc; margin: 5px 0 0 0;">Magnitude 5.0+ events in last 24 hours</p>
+    </div>
+    <style>
+    @keyframes pulse {{
+        0% {{ opacity: 1; }}
+        50% {{ opacity: 0.7; }}
+        100% {{ opacity: 1; }}
+    }}
+    </style>
+    """, unsafe_allow_html=True)
 tab1, tab2, tab3 = st.tabs(["📊 Live Data", "📸 Photos", "🛰️ Satellite"])
 
 with tab1:
