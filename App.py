@@ -7,10 +7,11 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
+from streamlit_autorefresh import st_autorefresh
 
 st.set_page_config(page_title="Earthquake Detection", page_icon="🌍", layout="wide")
 
-st.markdown('<meta http-equiv="refresh" content="30">', unsafe_allow_html=True)
+st_autorefresh(interval=30000, key="data_refresh")
 
 st.markdown("""
 <style>
