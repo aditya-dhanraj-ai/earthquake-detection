@@ -44,7 +44,7 @@ A real-time, AI-powered earthquake monitoring and analysis web application using
 
 ## 🔗 Live Demo
 
-🌍 **[Click here to view the Live App](https://earthquake-detection-xhafw3fzwe66gtpqkyc89.streamlit.app)**
+🌍 **[Click here to view the Live App](https://earthquake-detection-db30.onrender.com)**
 
 ## 📊 Data Source
 
