@@ -6,3 +6,4 @@ country_converter
 matplotlib
 numpy
 scikit-learn
+streamlit-autorefresh
