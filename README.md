@@ -46,6 +46,13 @@ A real-time, AI-powered earthquake monitoring and analysis web application using
 
 🌍 **[Click here to view the Live App]( https://earthquake-detection-db80.onrender.com)**
 
+## 📄 Research Paper
+
+Published on Zenodo (Open Access): 
+**[Real-Time Earthquake Detection and Risk Classification](https://doi.org/10.5281/zenodo.23410853)**
+
+DOI: `10.5281/zenodo.23410853`
+
 ## 📊 Data Source
 
 Data is fetched in real-time from [USGS Earthquake Hazards Program](https://earthquake.usgs.gov/)
